@@ -182,49 +182,6 @@ async def get_collection_instruments_metadata_v2(
 
 
 @router.get(
-    "/v3/collection-instruments/metadata",
-    responses={
-        400: {
-            "model": ExceptionResponseModel,
-            "content": {"application/json": {"example": erm.erm_400_incorrect_key_names_exception}},
-        },
-        500: {
-            "model": ExceptionResponseModel,
-            "content": {"application/json": {"example": erm.erm_500_global_exception}},
-        },
-        404: {
-            "model": ExceptionResponseModel,
-            "content": {"application/json": {"example": erm.erm_404_no_ci_exception}},
-        },
-    },
-)
-async def get_collection_instrument_metadata_by_guid(
-    query_params: GetCiMetadataV3Params = Depends(),
-    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
-):
-    """
-    GET method that returns ONE metadata object from Firestore that match the guid passed.
-    """
-    logger.info("Getting ci metadata via v3 endpoint")
-    logger.debug(f"get_collection_instrument_metadata_by_guid: Input data: guid={query_params.__dict__}")
-
-    if query_params.guid == "":
-        raise exceptions.ExceptionIncorrectKeyNames
-
-    ci_metadata = ci_processor_service.get_ci_metadata_with_id(query_params.guid)
-
-    if not ci_metadata:
-        error_message = "get_collection_instrument_metadata_by_guid: exception raised - No collection instrument metadata found"
-        logger.error(error_message)
-        logger.debug(f"{error_message}:{query_params.guid}")
-        raise exceptions.ExceptionNoCIMetadata
-
-    logger.info("CI metadata retrieved successfully.")
-
-    return ci_metadata.model_dump()
-
-
-@router.get(
     "/v1/collection-instruments/schema",
     responses={
         200: {
