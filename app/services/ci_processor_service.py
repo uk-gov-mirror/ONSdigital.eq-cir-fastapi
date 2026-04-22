@@ -1,8 +1,10 @@
 from app.config import logging, settings
-from app.events.publisher import publisher
+from app.events.publisher import Publisher
 from app.exception import exceptions
 from app.models.requests import PostCiSchemaV1Data
 from app.models.responses import CiMetadata, CiValidatorMetadata
+from app.repositories.buckets.bucket_loader import BucketLoader
+from app.repositories.buckets.ci_schema_bucket_repository import CiSchemaBucketRepository
 from app.repositories.firebase.ci_firebase_repository import CiFirebaseRepository
 from app.services.ci_classifier_service import CiClassifierService
 from app.services.ci_schema_location_service import CiSchemaLocationService
@@ -13,8 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 class CiProcessorService:
-    def __init__(self) -> None:
-        self.ci_firebase_repository = CiFirebaseRepository()
+    def __init__(self, bucket_loader: BucketLoader, publisher: Publisher) -> None:
+        self.ci_firebase_repository = CiFirebaseRepository(bucket_loader)
+        self.ci_bucket_repository = CiSchemaBucketRepository(bucket_loader)
+        self.publisher = publisher
 
     # Posts new CI metadata to Firestore
     def process_raw_ci(self, post_data: PostCiSchemaV1Data, ci_id, validator_version = "", ci_version = "") -> CiMetadata:
@@ -178,7 +182,7 @@ class CiProcessorService:
         """
         try:
             logger.info("Publishing CI metadata to topic...")
-            publisher.publish_message(post_ci_event)
+            self.publisher.publish_message(post_ci_event)
             logger.debug(f"CI metadata {post_ci_event} published to topic")
             logger.info("CI metadata published successfully.")
         except Exception as exc:

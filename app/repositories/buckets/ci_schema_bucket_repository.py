@@ -1,13 +1,13 @@
 import json
 
 from app.config import logging
-from app.repositories.buckets.bucket_loader import bucket_loader
+from app.repositories.buckets.bucket_loader import BucketLoader
 
 logger = logging.getLogger(__name__)
 
 
 class CiSchemaBucketRepository:
-    def __init__(self):
+    def __init__(self, bucket_loader: BucketLoader):
         self.bucket = bucket_loader.get_ci_schema_bucket()
 
     def store_ci_schema(self, blob_name: str, schema: dict) -> None:

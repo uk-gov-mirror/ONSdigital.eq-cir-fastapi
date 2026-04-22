@@ -3,6 +3,7 @@ from google.cloud.firestore import Query, Transaction
 
 from app.config import logging
 from app.models.responses import CiMetadata
+from app.repositories.buckets.bucket_loader import BucketLoader
 from app.repositories.buckets.ci_schema_bucket_repository import (
     CiSchemaBucketRepository,
 )
@@ -15,14 +16,14 @@ logger = logging.getLogger(__name__)
 class CiFirebaseRepository:
     """Provides methods to perform actions on firestore using the google firestore client"""
 
-    def __init__(self):
+    def __init__(self, bucket_loader: BucketLoader):
         """
         Initialises the google firestore client and sets the target collection based on
         `settings.PROJECT_ID`, `settings.FIRESTORE_DB_NAME` and `settings.CI_FIRESTORE_COLLECTION_NAME`
         """
         self.client = firebase_loader.get_client()
         self.ci_collection = firebase_loader.get_ci_collection()
-        self.ci_bucket_repository = CiSchemaBucketRepository()
+        self.ci_bucket_repository = CiSchemaBucketRepository(bucket_loader)
 
     def update_ci_metadata(self, guid: str, metadata: CiMetadata):
         """

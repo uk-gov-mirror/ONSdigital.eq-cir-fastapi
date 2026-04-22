@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 import app.exception.exception_response_models as erm
 from app.config import Settings, logging
+from app.dependencies import get_ci_processor_service
 from app.exception import exceptions
 from app.exception.exception_response_models import ExceptionResponseModel
 from app.models.classifier import Classifiers
@@ -50,7 +51,7 @@ settings = Settings()
 )
 async def delete_collection_instrument(
     query_params: DeleteCiV1Params = Depends(),
-    ci_processor_service: CiProcessorService = Depends(),
+    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     logger.info("Deleting ci metadata and schema via v1 endpoint...")
     logger.debug(f"Input data: query_params={query_params.__dict__}")
@@ -90,7 +91,7 @@ async def delete_collection_instrument(
 )
 async def get_collection_instruments_metadata_v1(
     query_params: GetCiMetadataV1Params = Depends(),
-    ci_processor_service: CiProcessorService = Depends(),
+    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that returns any metadata objects from Firestore that match the parameters passed.
@@ -141,7 +142,7 @@ async def get_collection_instruments_metadata_v1(
 )
 async def get_collection_instruments_metadata_v2(
     query_params: GetCiMetadataV2Params = Depends(),
-    ci_processor_service: CiProcessorService = Depends(),
+    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that returns any metadata objects from Firestore that match the parameters passed.
@@ -199,7 +200,7 @@ async def get_collection_instruments_metadata_v2(
 )
 async def get_collection_instrument_metadata_by_guid(
     query_params: GetCiMetadataV3Params = Depends(),
-    ci_processor_service: CiProcessorService = Depends(),
+    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that returns ONE metadata object from Firestore that match the guid passed.
@@ -248,8 +249,7 @@ async def get_collection_instrument_metadata_by_guid(
 )
 async def get_collection_instrument_schema_v1(
         query_params: GetCiSchemaV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
-        ci_schema_bucket_repository: CiSchemaBucketRepository = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that fetches a CI schema by survey_id, form_type and language.
@@ -277,7 +277,7 @@ async def get_collection_instrument_schema_v1(
     logger.info("Bucket schema location successfully retrieved. Getting schema")
     logger.debug(f"Bucket schema location: {bucket_schema_filename}")
 
-    ci_schema = ci_schema_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
+    ci_schema = ci_processor_service.ci_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
 
     if not ci_schema:
         error_message = "get_collection_instrument_schema_v1: exception raised - No CI found"
@@ -315,8 +315,7 @@ async def get_collection_instrument_schema_v1(
 )
 async def get_collection_instrument_schema_by_guid_v2(
         query_params: GetCiSchemaV2Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
-        ci_schema_bucket_repository: CiSchemaBucketRepository = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that fetches a CI schema by GUID.
@@ -340,7 +339,7 @@ async def get_collection_instrument_schema_by_guid_v2(
     logger.info("Bucket schema location successfully retrieved. Getting schema")
     logger.debug(f"Bucket schema location: {bucket_schema_filename}")
 
-    ci_schema = ci_schema_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
+    ci_schema = ci_processor_service.ci_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
 
     if not ci_schema:
         message = "get_collection_instrument_schema_by_guid_v2: exception raised - No CI found for"
@@ -376,7 +375,7 @@ async def get_collection_instrument_schema_by_guid_v2(
 async def create_collection_instrument_v3(
         post_data: PostCiSchemaV1Data,
         query_params: PostCiSchemaV3Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     POST method that creates a Collection Instrument. This will post the metadata to Firestore and
@@ -419,7 +418,7 @@ async def create_collection_instrument_v3(
     },
 )
 async def get_collection_instruments_validator_metadata_v1(
-    ci_processor_service: CiProcessorService = Depends(),
+    ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ) -> list[CiValidatorMetadata]:
     """
     GET method that returns the validator metadata for a CI schema.

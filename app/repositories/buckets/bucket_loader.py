@@ -13,9 +13,6 @@ class BucketLoader:
     def __init__(self, storage_client: storage.Client) -> None:
         self.__storage_client = storage_client
 
-        if settings.CONF == "unit":
-            return
-
         self.ci_schema_bucket = self._initialise_bucket(settings.CI_STORAGE_BUCKET_NAME)
 
     def get_ci_schema_bucket(self) -> storage.Bucket:
@@ -75,7 +72,3 @@ class BucketLoader:
             bucket = self._create_bucket(bucket_name)
 
         return bucket
-
-
-client = storage.Client(project=settings.PROJECT_ID)
-bucket_loader = BucketLoader(client)

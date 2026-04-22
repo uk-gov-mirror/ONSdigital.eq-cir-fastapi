@@ -96,13 +96,23 @@ def test_endpoint_returns_400_if_required_field_none(
 
     response = test_client.post(
         URL,
-        params={"validator_version": "0.0.1", "ci_version": 100},
+        params={"validator_version": "0.0.1", "guid": mock_id, "ci_version": 100},
         headers={"ContentType": CONTENT_TYPE},
         json=edited_mock_post_ci_schema.model_dump(),
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["message"] == "Validation has failed"
+
+@pytest.mark.parametrize(
+    "input_param",
+    [
+        "data_version",
+        "language",
+        "survey_id",
+        "title",
+    ],
+)
 
 
 def test_endpoint_returns_400_if_classifier_invalid(

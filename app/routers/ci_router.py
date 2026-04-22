@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 import app.exception.exception_response_models as erm
 from app.config import Settings, logging
+from app.dependencies import get_ci_processor_service
 from app.exception import exceptions
 from app.exception.exception_response_models import ExceptionResponseModel
 from app.models.classifier import Classifiers
@@ -51,7 +52,7 @@ settings = Settings()
     deprecated=True)
 async def http_delete_ci_v1(
         query_params: DeleteCiV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     DELETE method that deletes the CI schema from the bucket as well as the CI metadata from Firestore.
@@ -96,7 +97,7 @@ async def http_delete_ci_v1(
 )
 async def http_get_ci_metadata_v1(
         query_params: GetCiMetadataV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that returns any metadata objects from Firestore that match the parameters passed.
@@ -149,7 +150,7 @@ async def http_get_ci_metadata_v1(
 )
 async def http_get_ci_metadata_v2(
         query_params: GetCiMetadataV2Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that returns any metadata objects from Firestore that match the parameters passed.
@@ -218,8 +219,7 @@ async def http_get_ci_metadata_v2(
 )
 async def http_get_ci_schema_v1(
         query_params: GetCiSchemaV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
-        ci_schema_bucket_repository: CiSchemaBucketRepository = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that fetches a CI schema by survey_id, form_type and language.
@@ -247,7 +247,7 @@ async def http_get_ci_schema_v1(
     logger.info("Bucket schema location successfully retrieved. Getting schema")
     logger.debug(f"Bucket schema location: {bucket_schema_filename}")
 
-    ci_schema = ci_schema_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
+    ci_schema = ci_processor_service.ci_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
 
     if not ci_schema:
         error_message = "get_ci_schema_v1: exception raised - No CI found"
@@ -287,8 +287,7 @@ async def http_get_ci_schema_v1(
 )
 async def http_get_ci_schema_v2(
         query_params: GetCiSchemaV2Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
-        ci_schema_bucket_repository: CiSchemaBucketRepository = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     GET method that fetches a CI schema by GUID.
@@ -312,7 +311,7 @@ async def http_get_ci_schema_v2(
     logger.info("Bucket schema location successfully retrieved. Getting schema")
     logger.debug(f"Bucket schema location: {bucket_schema_filename}")
 
-    ci_schema = ci_schema_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
+    ci_schema = ci_processor_service.ci_bucket_repository.retrieve_ci_schema(bucket_schema_filename)
 
     if not ci_schema:
         message = "get_ci_schema_v2: exception raised - No CI found for"
@@ -343,7 +342,7 @@ async def http_get_ci_schema_v2(
 )
 async def http_post_ci_schema_v1(
         post_data: PostCiSchemaV1Data,
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     POST method that creates a Collection Instrument. This will post the metadata to Firestore and
@@ -383,7 +382,7 @@ async def http_post_ci_schema_v1(
 async def http_post_ci_schema_v2(
         post_data: PostCiSchemaV1Data,
         query_params: PostCiSchemaV2Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     POST method that creates a Collection Instrument. This will post the metadata to Firestore and
@@ -427,7 +426,7 @@ async def http_post_ci_schema_v2(
 async def http_post_ci_schema_v3(
         post_data: PostCiSchemaV1Data,
         query_params: PostCiSchemaV3Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     POST method that creates a Collection Instrument. This will post the metadata to Firestore and
@@ -471,7 +470,7 @@ async def http_post_ci_schema_v3(
     deprecated=True
 )
 async def http_get_ci_validator_metadata_v1(
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ) -> list[CiValidatorMetadata]:
     """
     GET method that returns the validator metadata for a CI schema.
