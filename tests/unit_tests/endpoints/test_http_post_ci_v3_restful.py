@@ -18,7 +18,6 @@ CONTENT_TYPE = "application/json"
 
 
 @patch("app.services.create_guid_service.CreateGuidService.create_guid")
-@patch("app.events.publisher.Publisher.publish_message")
 @patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.get_latest_ci_metadata")
 @patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.perform_new_ci_transaction")
 class TestHttpPostCiV3:
@@ -32,9 +31,9 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         test_client,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized ci metadata as part of the response if new ci is created
@@ -64,16 +63,16 @@ class TestHttpPostCiV3:
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_ci_metadata_v3),
         )
-        mocked_publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3.model_dump()))
 
 
     def test_endpoint_returns_200_if_ci_next_version_created_successfully(
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         test_client,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
@@ -104,15 +103,15 @@ class TestHttpPostCiV3:
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_next_version_ci_metadata_v3),
         )
-        mocked_publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3.model_dump()))
 
     def test_endpoint_returns_200_if_ci_created_successfully_without_version(
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         test_client,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized CI metadata when called with
@@ -143,15 +142,15 @@ class TestHttpPostCiV3:
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_ci_metadata_v3_auto_version),
         )
-        mocked_publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3_auto_version.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3_auto_version.model_dump()))
 
     def test_endpoint_returns_200_if_ci_next_version_created_successfully_without_version(
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         test_client,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
@@ -182,4 +181,4 @@ class TestHttpPostCiV3:
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_next_version_ci_metadata_v3_auto_version),
         )
-        mocked_publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3_auto_version.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3_auto_version.model_dump()))

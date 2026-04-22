@@ -29,7 +29,6 @@ CONTENT_TYPE = "application/json"
 
 
 @patch("app.services.create_guid_service.CreateGuidService.create_guid")
-@patch("app.events.publisher.Publisher.publish_message")
 @patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.get_latest_ci_metadata")
 @patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.perform_new_ci_transaction")
 class TestHttpPostCiV3:
@@ -43,8 +42,8 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized ci metadata as part of the response if new ci is created
@@ -64,26 +63,26 @@ class TestHttpPostCiV3:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == mock_ci_metadata_v3.model_dump()
-        CiFirebaseRepository.get_latest_ci_metadata.assert_called_once_with(
+        mocked_get_latest_ci_metadata.assert_called_once_with(
             mock_post_ci_schema.survey_id,
             mock_classifier_type,
             mock_classifier_value,
             mock_post_ci_schema.language,
         )
-        CiFirebaseRepository.perform_new_ci_transaction.assert_called_once_with(
+        mocked_perform_new_ci_transaction.assert_called_once_with(
             mock_id,
             mock_ci_metadata_v3,
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_ci_metadata_v3),
         )
-        Publisher.publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_ci_metadata_v3.model_dump()))
 
     def test_endpoint_returns_200_if_ci_next_version_created_successfully(
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
@@ -104,25 +103,24 @@ class TestHttpPostCiV3:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == mock_next_version_ci_metadata_v3.model_dump()
-        CiFirebaseRepository.get_latest_ci_metadata.assert_called_once_with(
+        mocked_get_latest_ci_metadata.assert_called_once_with(
             mock_post_ci_schema.survey_id,
             mock_classifier_type,
             mock_classifier_value,
             mock_post_ci_schema.language,
         )
-        CiFirebaseRepository.perform_new_ci_transaction.assert_called_once_with(
+        mocked_perform_new_ci_transaction.assert_called_once_with(
             mock_next_version_id,
             mock_next_version_ci_metadata_v3,
             mock_post_ci_schema.model_dump(),
             CiSchemaLocationService.get_ci_schema_location(mock_next_version_ci_metadata_v3),
         )
-        Publisher.publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3.model_dump()))
+        pubsub_mock.publish_message.assert_called_once_with(CiMetadata(**mock_next_version_ci_metadata_v3.model_dump()))
 
     def test_endpoint_returns_400_if_no_post_data(
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
     ):
         """
@@ -150,7 +148,6 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         input_param,
     ):
@@ -175,7 +172,6 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
     ):
         """
@@ -211,7 +207,6 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_try_publish_ci_metadata_to_topic,
         mocked_create_guid,
         input_param,
     ):
@@ -245,7 +240,6 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
         input_param,
     ):
@@ -271,7 +265,6 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
     ):
         """
@@ -299,8 +292,8 @@ class TestHttpPostCiV3:
         self,
         mocked_perform_new_ci_transaction,
         mocked_get_latest_ci_metadata,
-        mocked_publish_message,
         mocked_create_guid,
+        pubsub_mock,
     ):
         """
         Endpoint should return `HTTP_500_INTERNAL_SERVER_ERROR` as part of the response if ci metadata is created
@@ -311,7 +304,7 @@ class TestHttpPostCiV3:
         # Update mocked function to return a valid guid
         mocked_create_guid.return_value = mock_id
         # Raise an exception to simulate an error in publish message
-        mocked_publish_message.side_effect = Exception()
+        pubsub_mock.publish_message.side_effect = Exception()
 
         response = test_500_client.post(
             self.url,
