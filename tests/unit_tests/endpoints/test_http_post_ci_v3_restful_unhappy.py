@@ -104,16 +104,6 @@ def test_endpoint_returns_400_if_required_field_none(
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["message"] == "Validation has failed"
 
-@pytest.mark.parametrize(
-    "input_param",
-    [
-        "data_version",
-        "language",
-        "survey_id",
-        "title",
-    ],
-)
-
 
 def test_endpoint_returns_400_if_classifier_invalid(
         test_client,

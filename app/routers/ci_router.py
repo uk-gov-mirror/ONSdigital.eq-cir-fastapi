@@ -20,9 +20,6 @@ from app.models.requests import (
     PostCiSchemaV3Params,
 )
 from app.models.responses import CiMetadata, CiValidatorMetadata
-from app.repositories.buckets.ci_schema_bucket_repository import (
-    CiSchemaBucketRepository,
-)
 from app.services.ci_processor_service import CiProcessorService
 from app.services.ci_schema_location_service import CiSchemaLocationService
 from app.services.create_guid_service import CreateGuidService

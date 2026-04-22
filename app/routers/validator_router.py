@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 
 import app.exception.exception_response_models as erm
 from app.config import Settings, logging
+from app.dependencies import get_ci_processor_service
 from app.exception import exceptions
 from app.exception.exception_response_models import ExceptionResponseModel
 from app.models.requests import (
@@ -39,11 +40,12 @@ settings = Settings()
             "content": {"application/json": {"example": erm.erm_400_incorrect_key_names_exception}},
         },
     },
+    deprecated=True
 )
 async def http_put_ci_validator_version_v1(
         post_data: PostCiSchemaV1Data,
         query_params: UpdateValidatorVersionV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
 
     if not query_params.params_not_none(query_params.__dict__.keys()):

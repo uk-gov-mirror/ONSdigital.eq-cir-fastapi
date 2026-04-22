@@ -13,7 +13,8 @@ start-cloud-dev:
 unit-tests:
 	export CONF='unit' && \
 	export CI_STORAGE_BUCKET_NAME='the-ci-schema-bucket' && \
-	export PROJECT_ID='$(PROJECT_ID)' && \
+	export PROJECT_ID='mock-project-id' && \
+	export FIRESTORE_DB_NAME="the-firestore-db-name" && \
 	uv run python -m pytest --cov=app --cov-fail-under=90 --cov-report term-missing --cov-config=.coveragerc_unit -vv ./tests/unit_tests/ -W ignore::DeprecationWarning
 
 # Spinning up emulators in docker is required to run the local integration tests.

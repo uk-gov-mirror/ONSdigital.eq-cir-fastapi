@@ -6,6 +6,7 @@ from app.models.responses import CiMetadata, CiValidatorMetadata
 from app.repositories.buckets.bucket_loader import BucketLoader
 from app.repositories.buckets.ci_schema_bucket_repository import CiSchemaBucketRepository
 from app.repositories.firebase.ci_firebase_repository import CiFirebaseRepository
+from app.repositories.firebase.firebase_loader import FirebaseLoader
 from app.services.ci_classifier_service import CiClassifierService
 from app.services.ci_schema_location_service import CiSchemaLocationService
 from app.services.datetime_service import DatetimeService
@@ -15,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class CiProcessorService:
-    def __init__(self, bucket_loader: BucketLoader, publisher: Publisher) -> None:
-        self.ci_firebase_repository = CiFirebaseRepository(bucket_loader)
+    def __init__(self, bucket_loader: BucketLoader, firebase_loader: FirebaseLoader, publisher: Publisher) -> None:
+        self.ci_firebase_repository = CiFirebaseRepository(bucket_loader, firebase_loader)
         self.ci_bucket_repository = CiSchemaBucketRepository(bucket_loader)
         self.publisher = publisher
 

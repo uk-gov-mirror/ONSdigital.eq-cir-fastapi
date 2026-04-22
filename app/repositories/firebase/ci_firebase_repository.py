@@ -7,7 +7,7 @@ from app.repositories.buckets.bucket_loader import BucketLoader
 from app.repositories.buckets.ci_schema_bucket_repository import (
     CiSchemaBucketRepository,
 )
-from app.repositories.firebase.firebase_loader import firebase_loader
+from app.repositories.firebase.firebase_loader import FirebaseLoader
 from app.services.ci_schema_location_service import CiSchemaLocationService
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class CiFirebaseRepository:
     """Provides methods to perform actions on firestore using the google firestore client"""
 
-    def __init__(self, bucket_loader: BucketLoader):
+    def __init__(self, bucket_loader: BucketLoader, firebase_loader: FirebaseLoader) -> None:
         """
         Initialises the google firestore client and sets the target collection based on
         `settings.PROJECT_ID`, `settings.FIRESTORE_DB_NAME` and `settings.CI_FIRESTORE_COLLECTION_NAME`

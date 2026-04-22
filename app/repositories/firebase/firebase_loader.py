@@ -4,9 +4,9 @@ from app.config import settings
 
 
 class FirebaseLoader:
-    def __init__(self):
-        self.client = self._connect_client()
-        self.ci_collection = self._set_collection("ons-collection-instruments")
+    def __init__(self, firestore_client: Client) -> None:
+        self.client = firestore_client
+        self.ci_collection = self._set_collection(settings.CI_FIRESTORE_COLLECTION_NAME)
 
     def get_client(self) -> Client:
         """
@@ -20,21 +20,8 @@ class FirebaseLoader:
         """
         return self.ci_collection
 
-    def _connect_client(self) -> Client:
-        """
-        Connect to the firestore client using PROJECT_ID
-        """
-        if settings.CONF == "unit":
-            return None
-        return Client(project=settings.PROJECT_ID, database=settings.FIRESTORE_DB_NAME)
-
     def _set_collection(self, collection) -> CollectionReference:
         """
-        Setup the collection reference for schemas and datasets
+        Set up the collection reference for schemas and datasets
         """
-        if settings.CONF == "unit":
-            return None
         return self.client.collection(collection)
-
-
-firebase_loader = FirebaseLoader()

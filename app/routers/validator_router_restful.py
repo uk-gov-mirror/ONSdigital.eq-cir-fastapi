@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 import app.exception.exception_response_models as erm
 from app.config import Settings, logging
+from app.dependencies import get_ci_processor_service
 from app.exception import exceptions
 from app.exception.exception_response_models import ExceptionResponseModel
 from app.models.requests import (
@@ -43,7 +44,7 @@ settings = Settings()
 async def put_collection_instrument_validator_version(
         post_data: PostCiSchemaV1Data,
         query_params: UpdateValidatorVersionV1Params = Depends(),
-        ci_processor_service: CiProcessorService = Depends(),
+        ci_processor_service: CiProcessorService = Depends(get_ci_processor_service),
 ):
     """
     PUT method that updates validator_version and CI metadata by Guid.
