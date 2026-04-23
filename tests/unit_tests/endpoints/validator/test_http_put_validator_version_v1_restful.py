@@ -2,18 +2,15 @@ from unittest.mock import Mock
 from unittest.mock import patch
 from urllib.parse import urlencode
 
-from fastapi.testclient import TestClient
 from fastapi import status
 
 from app.config import Settings
-from app.main import app
 from app.models.requests import UpdateValidatorVersionV1Params
 from tests.test_data.ci_test_data import (
     mock_id, mock_ci_metadata_v2, mock_post_ci_schema, mock_updated_validator_version_v2,
     mock_updated_ci_metadata_v2,
 )
 
-client = TestClient(app)
 settings = Settings()
 
 
@@ -40,12 +37,13 @@ class TestHttpPutValidatorVersionV1:
                                   mocked_store_ci_schema: Mock,
                                   mocked_update_ci_metadata: Mock,
                                   mocked_get_ci_metadata_with_id: Mock,
+                                  test_client,
                                   ):
         content_type = "application/json"
         # mocked function to return valid ci metadata, indicating ci metadata is found
         mocked_get_ci_metadata_with_id.return_value = mock_ci_metadata_v2
 
-        response = client.put(self.url,
+        response = test_client.put(self.url,
                               headers={"ContentType": content_type},
                               json=mock_post_ci_schema.model_dump())
 
@@ -65,13 +63,14 @@ class TestHttpPutValidatorVersionV1:
                                          mocked_store_ci_schema: Mock,
                                          mocked_update_ci_metadata: Mock,
                                          mocked_get_ci_metadata_with_id: Mock,
+                                         test_client,
                                          ):
 
         content_type = "application/json"
         mocked_get_ci_metadata_with_id.return_value = None
 
         # Make request to base url without any query params
-        response = client.put(self.url,
+        response = test_client.put(self.url,
                               headers={"ContentType": content_type},
                               json=mock_post_ci_schema.model_dump())
 
@@ -82,9 +81,10 @@ class TestHttpPutValidatorVersionV1:
                                                        mocked_store_ci_schema: Mock,
                                                        mocked_update_ci_metadata: Mock,
                                                        mocked_get_ci_metadata_with_id: Mock,
+                                                       test_client,
                                                        ):
         content_type = "application/json"
-        response = client.put(self.missing_validator_version,
+        response = test_client.put(self.missing_validator_version,
                               headers={"ContentType": content_type},
                               json=mock_post_ci_schema.model_dump()
                               )
@@ -96,9 +96,10 @@ class TestHttpPutValidatorVersionV1:
                                           mocked_store_ci_schema: Mock,
                                           mocked_update_ci_metadata: Mock,
                                           mocked_get_ci_metadata_with_id: Mock,
+                                          test_client,
                                           ):
         content_type = "application/json"
-        response = client.put(self.missing_guid,
+        response = test_client.put(self.missing_guid,
                               headers={"ContentType": content_type},
                               json=mock_post_ci_schema.model_dump())
 

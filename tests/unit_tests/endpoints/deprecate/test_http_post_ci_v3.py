@@ -6,10 +6,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from app.config import Settings
-from app.events.publisher import Publisher
 from app.main import app
 from app.models.responses import CiMetadata
-from app.repositories.firebase.ci_firebase_repository import CiFirebaseRepository
 from app.services.ci_schema_location_service import CiSchemaLocationService
 from tests.test_data.ci_test_data import (
     mock_classifier_type,

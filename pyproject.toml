@@ -1,6 +1,6 @@
 [project]
 name = "cir"
-version = "0.2.2"
+version = "0.2.3"
 description = "Collection Instrument Registry"
 requires-python = ">=3.13,<3.14"
 dependencies = [

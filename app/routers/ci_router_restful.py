@@ -13,16 +13,12 @@ from app.models.requests import (
     DeleteCiV1Params,
     GetCiMetadataV1Params,
     GetCiMetadataV2Params,
-    GetCiMetadataV3Params,
     GetCiSchemaV1Params,
     GetCiSchemaV2Params,
     PostCiSchemaV1Data,
     PostCiSchemaV3Params,
 )
 from app.models.responses import CiMetadata, CiValidatorMetadata
-from app.repositories.buckets.ci_schema_bucket_repository import (
-    CiSchemaBucketRepository,
-)
 from app.services.ci_processor_service import CiProcessorService
 from app.services.ci_schema_location_service import CiSchemaLocationService
 
@@ -108,7 +104,7 @@ async def get_collection_instruments_metadata_v1(
         query_params.survey_id, query_params.classifier_type, query_params.classifier_value, query_params.language
     )
 
-    if not ci_metadata_collection:
+    if not ci_metadata_collection or len(ci_metadata_collection) == 0:
         error_message = "get_collection_instruments_metadata_v1: exception raised - No collection instrument metadata found"
         logger.error(error_message)
         logger.debug(f"{error_message}:{asdict(query_params)}")
@@ -166,7 +162,7 @@ async def get_collection_instruments_metadata_v2(
                 query_params.language
             )
 
-    if not ci_metadata_collection:
+    if not ci_metadata_collection or len(ci_metadata_collection) == 0:
         error_message = "get_collection_instruments_metadata_v2: exception raised - No collection instruments found"
         logger.error(error_message)
         logger.debug(f"{error_message}:{asdict(query_params)}")

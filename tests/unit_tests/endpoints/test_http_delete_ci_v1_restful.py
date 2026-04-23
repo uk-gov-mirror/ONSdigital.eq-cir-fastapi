@@ -2,16 +2,11 @@ from unittest.mock import patch
 from urllib.parse import urlencode
 
 from fastapi import status
-from fastapi.testclient import TestClient
 
 from app.config import Settings
-from app.main import app
 from app.models.requests import DeleteCiV1Params
-from app.repositories.firebase.ci_firebase_repository import CiFirebaseRepository
 from tests.test_data.ci_test_data import mock_ci_metadata, mock_survey_id
 
-client = TestClient(app)
-test_500_client = TestClient(app, raise_server_exceptions=False)
 settings = Settings()
 
 
@@ -28,6 +23,7 @@ class TestHttpDeleteCiV1Restful:
         self,
         mocked_perform_delete_ci_transaction,
         mocked_get_ci_metadata_collection_with_survey_id,
+        test_client,
     ):
         """
         Endpoint should return `HTTP_200_OK` and a return confirmation string as part of the response
@@ -36,25 +32,26 @@ class TestHttpDeleteCiV1Restful:
         # Update mocked function to return a list of valid ci metadata
         mocked_get_ci_metadata_collection_with_survey_id.return_value = [mock_ci_metadata]
 
-        response = client.delete(self.url)
+        response = test_client.delete(self.url)
         expected_message = f"CI metadata and schema successfully deleted for {self.query_params.survey_id}."
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json() == expected_message
-        CiFirebaseRepository.get_ci_metadata_collection_with_survey_id.assert_called_once_with(mock_survey_id)
-        CiFirebaseRepository.perform_delete_ci_transaction.assert_called_once_with([mock_ci_metadata])
+        mocked_get_ci_metadata_collection_with_survey_id.assert_called_once_with(mock_survey_id)
+        mocked_perform_delete_ci_transaction.assert_called_once_with([mock_ci_metadata])
 
     def test_endpoint_returns_400_if_query_parameters_are_not_present(
         self,
         mocked_perform_delete_ci_transaction,
         mocked_get_ci_metadata_collection_with_survey_id,
+        test_client,
     ):
         """
         Endpoint should return `HTTP_400_BAD_REQUEST` as part of the response if `
         `survey_id` are not part of the querystring parameters
         """
         # Make request to base url without any query params
-        response = client.delete(self.base_url)
+        response = test_client.delete(self.base_url)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json()["message"] == "Invalid search parameters provided"
@@ -63,6 +60,7 @@ class TestHttpDeleteCiV1Restful:
         self,
         mocked_perform_delete_ci_transaction,
         mocked_get_ci_metadata_collection_with_survey_id,
+        test_client,
     ):
         """
         Endpoint should return `HTTP_404_NOT_FOUND` and a string indicating a bad request
@@ -71,7 +69,7 @@ class TestHttpDeleteCiV1Restful:
         # Update mocked function to return `None` showing ci metadata is not found
         mocked_get_ci_metadata_collection_with_survey_id.return_value = None
 
-        response = client.delete(self.url)
+        response = test_client.delete(self.url)
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json()["message"] == "No CI to delete"
@@ -80,6 +78,7 @@ class TestHttpDeleteCiV1Restful:
         self,
         mocked_perform_delete_ci_transaction,
         mocked_get_ci_metadata_collection_with_survey_id,
+        test_client_no_server_exception,
     ):
         """
         Endpoint should return `HTTP_500_INTERNAL_SERVER_ERROR` as part of the response if ci is
@@ -90,7 +89,7 @@ class TestHttpDeleteCiV1Restful:
         # Raise an exception to simulate an error in transaction
         mocked_perform_delete_ci_transaction.side_effect = Exception()
 
-        response = test_500_client.delete(self.url)
+        response = test_client_no_server_exception.delete(self.url)
 
         assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         assert response.json()["message"] == "Unable to process request"

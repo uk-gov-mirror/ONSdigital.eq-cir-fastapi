@@ -1,5 +1,5 @@
 from fastapi import Depends
-from google.cloud import storage, firestore
+from google.cloud import firestore, storage
 from google.cloud.pubsub_v1 import PublisherClient
 
 from app.config import settings

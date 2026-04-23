@@ -20,6 +20,12 @@ class FirebaseLoader:
         """
         return self.ci_collection
 
+    def set_transaction(self):
+        """
+        Set the transaction for firestore client
+        """
+        self.client.transaction = self.client.transaction()
+
     def _set_collection(self, collection) -> CollectionReference:
         """
         Set up the collection reference for schemas and datasets

@@ -11,14 +11,14 @@ from app.models.responses import CiMetadata
 from app.repositories.firebase.ci_firebase_repository import CiFirebaseRepository
 from app.services.ci_schema_location_service import CiSchemaLocationService
 from tests.test_data.ci_test_data import (
+    mock_ci_metadata_v3,
+    mock_ci_metadata_v3_with_ci_version,
     mock_classifier_type,
     mock_classifier_value,
     mock_id,
+    mock_next_version_ci_metadata_v3,
     mock_next_version_id,
     mock_post_ci_schema,
-    mock_next_version_ci_metadata_v3,
-    mock_ci_metadata_v3,
-    mock_ci_metadata_v3_with_ci_version,
 )
 
 settings = Settings()

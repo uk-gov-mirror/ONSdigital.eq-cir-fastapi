@@ -34,6 +34,30 @@ def test_endpoint_returns_400_if_version_smaller_than_latest(
     assert response.json()["message"] == "Invalid ci_version provided"
 
 
+@patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.get_latest_ci_metadata")
+def test_endpoint_returns_400_if_version_equal_to_latest(
+        mocked_get_latest_ci_metadata,
+        test_client,
+):
+    """
+    Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
+    as part of the response if new version of ci is created.
+    Assert mocked functions are called with the correct arguments.
+    """
+    # Update mocked function to return ci metadata indicating a previous version of metadata is found
+    mocked_get_latest_ci_metadata.return_value = mock_ci_metadata_v3
+
+    response = test_client.post(
+        URL,
+        params={"validator_version": "0.0.1", "guid": mock_next_version_id, "ci_version": 2},
+        headers={"ContentType": CONTENT_TYPE},
+        json=mock_post_ci_schema.model_dump(),
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["message"] == "Invalid ci_version provided"
+
+
 @patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.get_ci_metadata_with_id")
 def test_endpoint_returns_400_if_guid_already_exists(
         mocked_get_ci_metadata_with_id,
@@ -55,6 +79,44 @@ def test_endpoint_returns_400_if_guid_already_exists(
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["message"] == "Invalid GUID provided"
+
+
+def test_endpoint_returns_400_if_guid_is_empty(
+        test_client,
+):
+    """
+    Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
+    as part of the response if new version of ci is created.
+    Assert mocked functions are called with the correct arguments.
+    """
+    response = test_client.post(
+        URL,
+        params={"validator_version": "0.0.1", "ci_version": 100},
+        headers={"ContentType": CONTENT_TYPE},
+        json=mock_post_ci_schema.model_dump(),
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["message"] == "Invalid GUID provided"
+
+
+def test_endpoint_returns_400_if_validator_version_is_empty(
+        test_client,
+):
+    """
+    Endpoint should return `HTTP_200_OK` and serialized ci metadata with updated version
+    as part of the response if new version of ci is created.
+    Assert mocked functions are called with the correct arguments.
+    """
+    response = test_client.post(
+        URL,
+        params={"guid": mock_id, "ci_version": 100},
+        headers={"ContentType": CONTENT_TYPE},
+        json=mock_post_ci_schema.model_dump(),
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()["message"] == "No validator version provided"
 
 
 def test_endpoint_returns_400_if_no_post_data(
@@ -187,9 +249,8 @@ def test_endpoint_returns_400_if_required_field_whitespace(
     assert response.json()["message"] == "Validation has failed"
 
 
-@patch("app.repositories.firebase.ci_firebase_repository.CiFirebaseRepository.perform_new_ci_transaction")
 def test_endpoint_returns_500_if_exception_occurs_in_transaction(
-        mocked_perform_new_ci_transaction,
+        firestore_mock,
         test_client_no_server_exception,
 ):
     """
@@ -197,7 +258,7 @@ def test_endpoint_returns_500_if_exception_occurs_in_transaction(
     but not processed due to an error in transaction
     """
     # Raise an exception to simulate an error in transaction
-    mocked_perform_new_ci_transaction.side_effect = Exception()
+    firestore_mock.set_transaction.side_effect = Exception()
 
     response = test_client_no_server_exception.post(
         URL,
@@ -210,9 +271,8 @@ def test_endpoint_returns_500_if_exception_occurs_in_transaction(
     assert response.json()["message"] == "Unable to process request"
 
 
-@patch("app.events.publisher.Publisher.publish_message")
 def test_endpoint_returns_500_if_exception_occurs_in_publish_message(
-        mocked_publish_message,
+        pubsub_mock,
         test_client_no_server_exception,
 ):
     """
@@ -220,7 +280,7 @@ def test_endpoint_returns_500_if_exception_occurs_in_publish_message(
     but not processed due to an error in publish message
     """
     # Raise an exception to simulate an error in publish message
-    mocked_publish_message.side_effect = Exception()
+    pubsub_mock.publish_message.side_effect = Exception()
 
     response = test_client_no_server_exception.post(
         URL,
